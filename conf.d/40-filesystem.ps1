@@ -115,6 +115,11 @@ function nvg {
     & $neovide.Source --frame none @args
 }
 
+# Keep the previous Neovide shortcut without shadowing Node Version Manager.
+if (-not (Get-Command nvm -ErrorAction SilentlyContinue)) {
+    Set-Alias -Name nvm -Value nvg -Scope Global
+}
+
 # Preserve PowerShell's built-in rmdir alias. Recursive deletion is explicit.
 function rdtree {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]

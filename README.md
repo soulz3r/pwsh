@@ -23,7 +23,7 @@ The Vi indicator stays beside the cursor instead of being pushed to the far-righ
 - Bounded fuzzy file search with ff.
 - Filesystem commands ls, ll, la, lt, and llt.
 - Directory creation with mkcd and explicit recursive deletion with rdtree.
-- Neovide launcher nvg.
+- Neovide launcher nvg, with the previous nvm shortcut retained when Node Version Manager is not installed.
 - Idempotent SilkTerm shell integration.
 - Symlink-aware installer and behavioral smoke tests.
 
@@ -41,7 +41,7 @@ pwsh/
 └── README.md
 ~~~
 
-The root profile is the entrypoint and loader. Put features in focused files under conf.d; files load alphabetically. PSReadLine configures Vi editing first. Oh My Posh's vimode segment installs the script-based mode-change handler and redraws the prompt when the mode changes. If Oh My Posh or the theme is unavailable, PSReadLine falls back to its visible cursor indicator.
+The root profile is the entrypoint and loader. Put features in focused files under conf.d; files load alphabetically. PSReadLine configures Vi editing first. Oh My Posh's vimode segment installs the script-based mode-change handler and redraws the prompt when the mode changes. zoxide initializes after Oh My Posh and uses its change-aware hook on modern PowerShell. The zoxide prompt wrapper is expected: it calls the saved prompt and then updates directory history. If Oh My Posh or the theme is unavailable, PSReadLine falls back to its visible cursor indicator.
 
 ## Requirements
 
@@ -89,7 +89,7 @@ The installer preserves existing profile content, creates a timestamped backup b
 
 The project root uses D:\projects when it exists, otherwise ~/projects. Set PROJECTS_DIR before loading the profile to override it.
 
-Search prefers fd. The PowerShell fallback for ff is deliberately limited to five directory levels. Search and tree commands skip common generated/vendor directories such as .git, node_modules, build, and target.
+Search prefers fd and streams results directly into fzf so the selector can open before the full tree has been scanned. The PowerShell fallback for ff is deliberately limited to five directory levels. Search and tree commands skip common generated/vendor directories such as .git, node_modules, build, and target. Project discovery falls back to a bounded PowerShell traversal if fd fails.
 
 Preview deletion with rdtree -WhatIf .\some-folder. PowerShell's built-in rmdir alias is left untouched.
 

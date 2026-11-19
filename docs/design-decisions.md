@@ -23,10 +23,13 @@ This is a personal interactive shell configuration, not a general-purpose PowerS
 - The root profile resolves its symlink before locating conf.d.
 - Components load in lexical order; failures identify the component that failed.
 - Components that register global callbacks must be safe to dot-source repeatedly.
+- On profile reload, restore the underlying prompt before Oh My Posh initializes, then reinstall zoxide's wrapper around the fresh prompt.
+- Use zoxide's change-aware PWD hook on modern PowerShell to avoid running a database update on every prompt.
 
 ## Navigation and search
 
 - Prefer fd for filesystem traversal and retain a bounded PowerShell fallback.
+- Stream file candidates directly from fd (or the PowerShell fallback) into fzf instead of materializing the entire file list first.
 - fzf owns selection; candidate discovery belongs to the producing command.
 - Exclude generated/vendor directories by default and do not follow directory symlinks.
 - Project discovery recognizes common build-system and version-control markers.
@@ -52,7 +55,7 @@ This is a personal interactive shell configuration, not a general-purpose PowerS
 
 - Static parsing and linting are necessary but insufficient.
 - Test command resolution, not just the existence of a function with the same name.
-- Test profile loading in fresh PowerShell processes as well as the current process.
+- Test profile loading in fresh PowerShell processes as well as the current process, including prompt-hook state after repeated dot-sourcing.
 - Test destructive commands with WhatIf and against disposable directories.
 - Exercise bounded search and tree fallbacks without requiring fd, fzf, or lsd.
 - Interactive PSReadLine and prompt repaint behavior still require a real terminal smoke test.

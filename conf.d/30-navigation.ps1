@@ -1,6 +1,27 @@
 # Optional project navigation and fuzzy search.
-if (Get-Command zoxide -CommandType Application -ErrorAction SilentlyContinue) {
-    zoxide init powershell --cmd cd | Out-String | Invoke-Expression
+$zoxide = Get-Command zoxide -CommandType Application -ErrorAction SilentlyContinue |
+    Select-Object -First 1
+
+if ($zoxide) {
+    # The prompt hook is the compatibility path for Windows PowerShell 5.1.
+    # PowerShell 6+ supports zoxide's change-aware PWD hook.
+    $hookMode = if ($PSVersionTable.PSVersion.Major -ge 6) { 'pwd' } else { 'prompt' }
+    $zoxideInit = @(& $zoxide.Source init powershell --cmd cd --hook $hookMode)
+    $zoxideExitCode = $LASTEXITCODE
+
+    if ($zoxideExitCode -ne 0 -or -not $zoxideInit) {
+        Write-Warning "zoxide initialization failed (exit code: $zoxideExitCode)."
+    } else {
+        # zoxide guards its prompt wrapper against duplicate initialization.
+        # Reset the guard because 20-prompt has just restored/recreated prompt.
+        $global:__zoxide_hooked = 0
+
+        try {
+            Invoke-Expression ($zoxideInit -join [Environment]::NewLine)
+        } catch {
+            Write-Warning "zoxide PowerShell integration failed: $($_.Exception.Message)"
+        }
+    }
 }
 
 function mkcd {
@@ -68,8 +89,15 @@ function Get-PwshProjectDirectories {
             $arguments += @('--exclude', $name)
         }
 
-        & $fd.Source @arguments '.' $rootPath 2>$null
-        return
+        $directories = @(& $fd.Source @arguments '.' $rootPath 2>$null)
+        $fdExitCode = $LASTEXITCODE
+
+        if ($fdExitCode -le 1) {
+            $directories
+            return
+        }
+
+        Write-Verbose "fd failed while discovering projects under '$rootPath'; using the PowerShell fallback."
     }
 
     Get-PwshDirectoriesFallback -Root $rootPath -MaxDepth 3
@@ -207,20 +235,16 @@ function ff {
             $arguments += @('--exclude', $name)
         }
 
-        $files = @(& $fd.Source @arguments '.' $rootPath 2>$null)
-        if ($LASTEXITCODE -gt 1) {
-            throw "fd failed while searching '$rootPath' (exit code: $LASTEXITCODE)."
-        }
+        # Keep fd and fzf in one pipeline. fzf can render as soon as the first
+        # candidates arrive instead of waiting for PowerShell to buffer all files.
+        $selected = & $fd.Source @arguments '.' $rootPath |
+            & $fzf.Source --prompt='file ❯ ' --height=60% --layout=reverse
     } else {
-        $files = @(Get-PwshFilesFallback -Root $rootPath -MaxDepth 5)
+        $selected = Get-PwshFilesFallback -Root $rootPath -MaxDepth 5 |
+            & $fzf.Source --prompt='file ❯ ' --height=60% --layout=reverse
     }
 
-    if (-not $files) {
-        Write-Host "No files found under '$rootPath'." -ForegroundColor DarkGray
-        return
-    }
-
-    $selected = $files | & $fzf.Source --prompt='file ❯ ' --height=60% --layout=reverse
+    # Empty output covers Escape/Ctrl+C and a selector with no chosen item.
     if (-not [string]::IsNullOrWhiteSpace($selected)) {
         Set-Clipboard -Value $selected.Trim()
     }

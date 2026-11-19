@@ -60,10 +60,26 @@ Assert-Condition ($theme -match '(?m)^version\s*=\s*4\s*$') 'Oh My Posh theme us
 Assert-Condition ($vimodeIndex -ge 0 -and $promptIndex -gt $vimodeIndex) 'Vi mode renders before the prompt symbol'
 Assert-Condition ($theme -notmatch "(?m)^\s*type\s*=\s*'rprompt'\s*$") 'Prompt does not use a far-right mode indicator'
 Assert-Condition ($theme -notmatch '\.Behind|\.Ahead') 'Git prompt avoids ahead/behind status probes'
+Assert-Condition ($theme -notmatch '(?m)^\s*fetch_status\s*=') 'Git prompt does not use an obsolete fetch_status option'
+
+$navigationSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/30-navigation.ps1') -Raw
+Assert-Condition ($navigationSource -match '--hook \$hookMode') 'zoxide uses an explicit change-aware hook on modern PowerShell'
+Assert-Condition ($navigationSource -match '\$global:__zoxide_hooked = 0') 'zoxide hook is reinstalled after profile reload'
+Assert-Condition ($navigationSource -notmatch '\$files = @\(& \$fd\.Source') 'ff does not buffer the complete fd result before fzf'
 
 if (-not $script:failed) {
     . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
     . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
+
+    # zoxide must wrap the freshly initialized prompt after repeated sourcing.
+    $zoxideCommand = Get-Command zoxide -CommandType Application -ErrorAction SilentlyContinue
+    if ($zoxideCommand) {
+        Assert-Condition ($global:__zoxide_hooked -eq 1) 'Zoxide hook remains initialized after repeated profile loads'
+        Assert-Condition ($global:__zoxide_prompt_old -is [scriptblock]) 'Zoxide retains the underlying prompt after reload'
+        Assert-Condition (
+            $global:__zoxide_prompt_old.ToString() -notmatch '__zoxide_hook'
+        ) 'Zoxide does not save its own wrapper as the underlying prompt'
+    }
 
     foreach ($name in @('croot', 'cproj', 'mkcd', 'ff', 'rdtree', 'nvg', 'ls', 'll', 'la', 'lt', 'llt')) {
         Assert-Condition ([bool](Get-Command $name -CommandType Function -ErrorAction SilentlyContinue)) "Profile function: $name"
@@ -72,6 +88,10 @@ if (-not $script:failed) {
     $resolvedLs = Get-Command ls -ErrorAction Stop
     Assert-Condition ($resolvedLs.CommandType -eq 'Function') 'ls resolves to the profile function'
     Assert-Condition ((Get-Command rmdir -ErrorAction Stop).CommandType -eq 'Alias') 'Built-in rmdir alias remains intact'
+    $nvmCommand = Get-Command nvm -ErrorAction SilentlyContinue
+    if ($nvmCommand -and $nvmCommand.CommandType -eq 'Alias') {
+        Assert-Condition ($nvmCommand.Definition -eq 'nvg') 'Legacy nvm shortcut points to Neovide when nvm is otherwise unused'
+    }
 
     # croot must fail cleanly when its configured root is empty.
     $previousProjectsDir = $env:PROJECTS_DIR
@@ -115,6 +135,23 @@ if (-not $script:failed) {
         Assert-Condition ($treeText -match '└──|├──') 'Tree fallback uses readable branch connectors'
     } finally {
         Remove-Item -LiteralPath $treeRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    # Project discovery recognizes markers and ignores generated directories.
+    $projectRoot = Join-Path ([IO.Path]::GetTempPath()) ("pwsh-project-test-" + [guid]::NewGuid())
+    $sourceProject = Join-Path $projectRoot 'source-project'
+    $ignoredProject = Join-Path $projectRoot 'node_modules'
+    $null = New-Item -ItemType Directory -Path $sourceProject -Force
+    $null = New-Item -ItemType Directory -Path $ignoredProject -Force
+    Set-Content -LiteralPath (Join-Path $sourceProject 'CMakeLists.txt') -Value 'project(test)'
+    Set-Content -LiteralPath (Join-Path $ignoredProject 'package.json') -Value '{}'
+    try {
+        $discoveredDirectories = @(Get-PwshDirectoriesFallback -Root $projectRoot -MaxDepth 3)
+        Assert-Condition (Test-PwshProjectDirectory -Path $sourceProject) 'Project detection recognizes CMake projects'
+        Assert-Condition ($discoveredDirectories -contains $sourceProject) 'Project fallback discovers nested directories'
+        Assert-Condition (-not ($discoveredDirectories -contains $ignoredProject)) 'Project fallback excludes generated directories'
+    } finally {
+        Remove-Item -LiteralPath $projectRoot -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     # Test safe deletion in a disposable directory only.
