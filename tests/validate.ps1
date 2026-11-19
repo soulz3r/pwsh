@@ -61,7 +61,7 @@ Assert-Condition ($vimodeIndex -ge 0 -and $promptIndex -gt $vimodeIndex) 'Vi mod
 Assert-Condition ($theme -notmatch "(?m)^\s*type\s*=\s*'rprompt'\s*$") 'Prompt does not use a far-right mode indicator'
 Assert-Condition ($theme -notmatch '\\.Behind|\\.Ahead') 'Git prompt avoids ahead/behind status probes'
 Assert-Condition ($theme -notmatch '(?m)^\s*fetch_status\s*=') 'Git prompt does not use an obsolete fetch_status option'
-Assert-Condition ($theme -match "(?m)^\\s*style = 'plain'\\s*$") 'Prompt uses plain text segments'
+Assert-Condition ($theme.Contains("style = 'plain'")) 'Prompt uses plain text segments'
 Assert-Condition ($theme -notmatch 'leading_diamond|trailing_diamond|powerline_symbol||') 'Prompt has no boxes or powerline separators'
 Assert-Condition ($theme.Contains("template = '{{ .Path }}'")) 'Path renders without decorative icons'
 Assert-Condition ($theme.Contains("template = '  {{ .HEAD }}")) 'Git branch stays compact'
