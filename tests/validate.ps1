@@ -87,7 +87,10 @@ if (-not $script:failed) {
 
     $resolvedLs = Get-Command ls -ErrorAction Stop
     Assert-Condition ($resolvedLs.CommandType -eq 'Function') 'ls resolves to the profile function'
-    Assert-Condition ((Get-Command rmdir -ErrorAction Stop).CommandType -eq 'Alias') 'Built-in rmdir alias remains intact'
+    $rmdirCommand = Get-Command rmdir -ErrorAction Stop
+    Assert-Condition (
+        $rmdirCommand.CommandType -eq 'Alias' -and $rmdirCommand.Definition -eq 'rdtree'
+    ) 'rmdir preserves the legacy recursive-delete shortcut'
     $nvmCommand = Get-Command nvm -ErrorAction SilentlyContinue
     if ($nvmCommand -and $nvmCommand.CommandType -eq 'Alias') {
         Assert-Condition ($nvmCommand.Definition -eq 'nvg') 'Legacy nvm shortcut points to Neovide when nvm is otherwise unused'
@@ -161,6 +164,9 @@ if (-not $script:failed) {
     try {
         rdtree -WhatIf $deleteTarget
         Assert-Condition (Test-Path -LiteralPath $deleteTarget -PathType Container) 'rdtree -WhatIf preserves the target'
+
+        rmdir -WhatIf $deleteTarget
+        Assert-Condition (Test-Path -LiteralPath $deleteTarget -PathType Container) 'rmdir alias also honors WhatIf'
 
         rdtree -Confirm:$false $deleteTarget
         Assert-Condition (-not (Test-Path -LiteralPath $deleteTarget)) 'rdtree deletes only the requested target'

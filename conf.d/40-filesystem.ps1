@@ -122,7 +122,7 @@ if (-not (Get-Command nvm -ErrorAction SilentlyContinue)) {
 
 # Preserve PowerShell's built-in rmdir alias. Recursive deletion is explicit.
 function rdtree {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [Alias('FullName')]
@@ -141,3 +141,7 @@ function rdtree {
         }
     }
 }
+
+# Preserve the recursive rmdir behavior from the original profile.
+# PowerShell's built-in alias is replaced intentionally for this personal config.
+Set-Alias -Name rmdir -Value rdtree -Scope Global -Force

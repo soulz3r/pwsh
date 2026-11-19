@@ -85,13 +85,14 @@ The installer preserves existing profile content, creates a timestamped backup b
 | ls, ll, la | Directory listings |
 | lt, llt | Tree listings |
 | rdtree path | Recursively delete a directory; supports WhatIf and Confirm |
+| rmdir path | Legacy recursive-delete shortcut to rdtree |
 | nvg | Launch Neovide |
 
 The project root uses D:\projects when it exists, otherwise ~/projects. Set PROJECTS_DIR before loading the profile to override it.
 
 Search prefers fd and streams results directly into fzf so the selector can open before the full tree has been scanned. The PowerShell fallback for ff is deliberately limited to five directory levels. Search and tree commands skip common generated/vendor directories such as .git, node_modules, build, and target. Project discovery falls back to a bounded PowerShell traversal if fd fails.
 
-Preview deletion with rdtree -WhatIf .\some-folder. PowerShell's built-in rmdir alias is left untouched.
+Preview deletion with rdtree -WhatIf .\some-folder. The legacy rmdir command remains an alias to rdtree, so existing recursive-delete workflows keep working.
 
 ## Checks
 

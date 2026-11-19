@@ -38,8 +38,8 @@ This is a personal interactive shell configuration, not a general-purpose PowerS
 
 ## Filesystem safety
 
-- Do not redefine PowerShell's built-in rmdir alias.
-- Forced recursive deletion uses the explicit rdtree command with WhatIf and Confirm.
+- Keep recursive deletion behind the rdtree implementation with WhatIf and Confirm support.
+- Preserve the original profile's rmdir shortcut as an alias to rdtree for command compatibility.
 - Listing commands retain useful native fallbacks when lsd is absent.
 - The ls function must not be shadowed by the built-in alias.
 - Tree fallbacks use readable branch connectors, obey a depth limit, skip generated folders, and never recurse through directory links.
