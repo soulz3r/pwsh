@@ -23,10 +23,10 @@ pwsh/
 ├── .github/workflows/powershell.yml
 ├── conf.d/
 │   ├── 10-environment.ps1
+│   ├── 15-readline.ps1
 │   ├── 20-prompt.ps1
 │   ├── 30-navigation.ps1
 │   ├── 40-filesystem.ps1
-│   ├── 50-readline.ps1
 │   ├── 60-fzf.ps1
 │   └── 90-silkterm.ps1
 ├── tests/validate.ps1
@@ -36,7 +36,7 @@ pwsh/
 └── LICENSE
 ~~~
 
-The root profile is a loader. Put new features in a focused file under `conf.d/`; files are loaded alphabetically.
+The root profile is a loader. Put new features in a focused file under `conf.d/`; files are loaded alphabetically. PSReadLine Vi mode loads before Oh My Posh so its live mode hook is initialized correctly.
 
 ## Requirements
 
