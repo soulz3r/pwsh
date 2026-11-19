@@ -1,0 +1,13 @@
+# PowerShell
+*.clixml
+*.transcript
+*.log
+
+# Editor and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test output
+TestResults/
