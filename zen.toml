@@ -2,9 +2,9 @@
 
 version = 4
 final_space = true
-console_title_template = '{{ .Shell }}  ·  {{ .Folder }}'
+console_title_template = '{{ .Shell }} · {{ .Folder }}'
 
-# Line one: location and local Git state.
+# Line one: a readable location, followed by Git context when available.
 [[blocks]]
   type = 'prompt'
   alignment = 'left'
@@ -13,27 +13,30 @@ console_title_template = '{{ .Shell }}  ·  {{ .Folder }}'
   [[blocks.segments]]
     type = 'path'
     style = 'plain'
-    foreground = '#7FBBB3'
+    foreground = '#A7C080'
     background = 'transparent'
-    template = '{{ .Path }}'
+    template = ' {{ .Path }}'
 
     [blocks.segments.properties]
-      style = 'full'
+      style = 'agnoster_git'
+      max_width = 42
+      folder_icon = '…'
+      folder_separator_icon = ' / '
+      hide_root_location = false
 
   [[blocks.segments]]
     type = 'git'
     style = 'plain'
     foreground = '#D3C6AA'
     background = 'transparent'
-    template = '  {{ .HEAD }}{{ if .Staging.Changed }} <#A7C080>●</>{{ end }}{{ if .Working.Changed }} <#DBBC7F>✚</>{{ end }}'
+    template = '  <#7A8478>on</> <#D3C6AA> {{ .HEAD }}</>{{ if .Staging.Changed }} <#A7C080>●</>{{ end }}{{ if .Working.Changed }} <#DBBC7F>✚</>{{ end }}'
 
     [blocks.segments.properties]
       branch_icon = ''
       commit_icon = '@'
       resolve_rebase_target = false
 
-# Line two: Vi mode, useful command duration, then the input cursor.
-# Keep the mode beside the prompt instead of pushing it to the far edge.
+# Line two: compact Vi state, useful command duration, and the input cursor.
 [[blocks]]
   type = 'prompt'
   alignment = 'left'
@@ -46,14 +49,14 @@ console_title_template = '{{ .Shell }}  ·  {{ .Folder }}'
     foreground_templates = [
       '{{if eq .Mode "insert"}}#A7C080{{else if eq .Mode "normal"}}#DBBC7F{{else if eq .Mode "visual"}}#7FBBB3{{else if eq .Mode "viopp"}}#D699B6{{else if eq .Mode "replace"}}#E67E80{{else}}#D3C6AA{{end}}',
     ]
-    template = '{{if eq .Mode "insert"}} I{{else if eq .Mode "normal"}} N{{else if eq .Mode "visual"}} V{{else if eq .Mode "viopp"}} O{{else if eq .Mode "replace"}} R{{else}} {{upper .Mode}}{{end}}'
+    template = ' {{if eq .Mode "insert"}}I{{else if eq .Mode "normal"}}N{{else if eq .Mode "visual"}}V{{else if eq .Mode "viopp"}}O{{else if eq .Mode "replace"}}R{{else}}{{upper .Mode}}{{end}}'
 
   [[blocks.segments]]
     type = 'executiontime'
     style = 'plain'
     foreground = '#7A8478'
     background = 'transparent'
-    template = '  {{ .FormattedMs }}'
+    template = '   {{ .FormattedMs }}'
 
     [blocks.segments.properties]
       threshold = 1000
@@ -78,4 +81,4 @@ console_title_template = '{{ .Shell }}  ·  {{ .Folder }}'
 [secondary_prompt]
   foreground = '#D699B6'
   background = 'transparent'
-  template = '❯❯ '
+  template = '  ❯❯ '

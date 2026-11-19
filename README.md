@@ -6,12 +6,20 @@ A modular PowerShell profile built around a fast interactive shell, practical te
 
 The prompt is deliberately two lines:
 
-- The first line shows the current path and Git branch, with separate markers for staged and working-tree changes.
-- The second line places the compact Vi indicator ( I,  N,  V,  O, or  R) immediately beside the input prompt.
-- Commands taking at least one second show their duration on the input line.
-- A failed command changes the prompt symbol to the error color.
+- The first line shows a folder-aware, width-limited path and the Git branch when inside a repository.
+- Staged and unstaged changes use separate, compact markers.
+- The second line keeps the Vi logo and mode letter beside the input arrow: ( I,  N,  V,  O, or  R).
+- Commands taking at least one second show a small duration indicator.
+- A failed command changes the input arrow to the error color.
 
-The Vi indicator stays beside the cursor instead of being pushed to the far-right edge of the terminal. Git status is local-only; the prompt does not calculate remote ahead/behind counts on every render.
+Example:
+
+~~~text
+ D:\config\powershell  on  main
+ I  ❯
+~~~
+
+The Vi indicator stays beside the input arrow instead of being pushed to the far-right edge of the terminal. The path shortens intermediate folders only when needed. Git status remains local-only; the prompt does not calculate remote ahead/behind counts.
 
 ## Features
 
