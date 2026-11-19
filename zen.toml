@@ -1,9 +1,10 @@
 #:schema https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json
 
-version = 2
+version = 4
 final_space = true
-console_title_template = '{{ .Shell }} in {{ .Folder }}'
+console_title_template = '{{ .Shell }}  ·  {{ .Folder }}'
 
+# Line one: location and local Git state.
 [[blocks]]
   type = 'prompt'
   alignment = 'left'
@@ -14,7 +15,7 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
     style = 'plain'
     foreground = '#7FBBB3'
     background = 'transparent'
-    template = ' {{ .Path }}'
+    template = '{{ .Path }}'
 
     [blocks.segments.properties]
       style = 'full'
@@ -22,18 +23,22 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
   [[blocks.segments]]
     type = 'git'
     style = 'plain'
-    foreground = '#A7C080'
+    foreground = '#D3C6AA'
     background = 'transparent'
-    template = ' {{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <yellow>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
+    template = '  {{ .HEAD }}{{ if .Staging.Changed }} <#A7C080>●</>{{ end }}{{ if .Working.Changed }} <#DBBC7F>✚</>{{ end }}'
 
     [blocks.segments.properties]
       branch_icon = ''
       commit_icon = '@'
       fetch_status = true
+      resolve_rebase_target = false
 
+# Line two: Vi mode, useful command duration, then the input cursor.
+# Keep the mode beside the prompt instead of pushing it to the far edge.
 [[blocks]]
-  type = 'rprompt'
-  overflow = 'hidden'
+  type = 'prompt'
+  alignment = 'left'
+  newline = true
 
   [[blocks.segments]]
     type = 'vimode'
@@ -47,32 +52,26 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
   [[blocks.segments]]
     type = 'executiontime'
     style = 'plain'
-    foreground = '#DBBC7F'
+    foreground = '#7A8478'
     background = 'transparent'
-    template = ' {{ .FormattedMs }}'
+    template = '  {{ .FormattedMs }}'
 
     [blocks.segments.properties]
-      threshold = 5000
-
-[[blocks]]
-  type = 'prompt'
-  alignment = 'left'
-  newline = true
+      threshold = 1000
+      style = 'round'
 
   [[blocks.segments]]
     type = 'text'
     style = 'plain'
     foreground_templates = [
-      '{{if gt .Code 0}}#E67E80{{end}}',
-      '{{if eq .Code 0}}#D699B6{{end}}',
+      '{{if gt .Code 0}}#E67E80{{else}}#A7C080{{end}}',
     ]
     background = 'transparent'
-    template = '❯ '
+    template = '  ❯ '
 
 [transient_prompt]
   foreground_templates = [
-    '{{if gt .Code 0}}#E67E80{{end}}',
-    '{{if eq .Code 0}}#D699B6{{end}}',
+    '{{if gt .Code 0}}#E67E80{{else}}#A7C080{{end}}',
   ]
   background = 'transparent'
   template = '❯ '
