@@ -10,7 +10,7 @@
 if ($Host.Name -eq 'ConsoleHost' -and -not [Console]::IsOutputRedirected) {
     function global:__SilkTermReportDir {
         $dir = $ExecutionContext.SessionState.Path.CurrentLocation.ProviderPath
-        if ($dir) { Write-Host -NoNewline ("{0}]9;9;`"{1}`"{0}\\" -f [char]27, $dir) }
+        if ($dir) { Write-Host -NoNewline ("{0}]9;9;`"{1}`"{0}\" -f [char]27, $dir) }
     }
 
     $__SilkTermStock = (-not $function:prompt) -or ($function:prompt.ToString() -match 'LinkID=225750')
