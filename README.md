@@ -12,7 +12,7 @@ A modular PowerShell profile built around a fast interactive shell, practical te
 - Project navigation with `croot` and `cproj`.
 - File search with `ff`, directory creation with `mkcd`, and safe recursive `rmdir`.
 - SilkTerm shell integration isolated from the rest of the profile.
-- One-command profile installer that preserves and backs up an existing PowerShell profile.
+- Profile installer that preserves existing profile content and respects symlinks.
 - PowerShell parser checks and PSScriptAnalyzer in GitHub Actions.
 
 Optional tools are checked before use. Missing optional executables should not prevent the profile from loading.
@@ -38,7 +38,7 @@ pwsh/
 └── LICENSE
 ~~~
 
-The root profile is a loader. Put new features in a focused file under `conf.d/`; files are loaded alphabetically. PSReadLine Vi mode loads before Oh My Posh so its live mode hook is initialized correctly.
+The root profile is the entrypoint and loader. Put new features in a focused file under `conf.d/`; files are loaded alphabetically. PSReadLine Vi mode loads before Oh My Posh so its live mode hook is initialized correctly.
 
 ## Requirements
 
@@ -70,18 +70,21 @@ git clone https://github.com/soulz3r/pwsh.git D:\config\powershell
 Set-Location D:\config\powershell
 ~~~
 
-Run the installer with PowerShell 7:
+If your PowerShell profile already symlinks directly to this repository's `Microsoft.PowerShell_profile.ps1`, that is already the correct setup. **Do not add another loader to the linked file.** The installer detects this arrangement and leaves it untouched.
+
+For setups without that symlink, run the installer with PowerShell 7:
 
 ~~~powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 ~~~
 
-The installer registers this repository's profile in the current user's PowerShell profile. It preserves existing profile content, creates a timestamped backup before changing the file, and safely replaces its own managed block when run again. It does not install Oh My Posh itself.
+The installer registers the repository profile in the current user's PowerShell profile. It preserves existing profile content, creates a timestamped backup before changing a regular profile file, and safely replaces its own managed block when run again. It refuses to write through an unrelated symlink. It does not install Oh My Posh itself.
 
-Restart PowerShell. The repository's `zen.toml` theme will then be initialized automatically. To check that the registration exists:
+Restart PowerShell. The repository's `zen.toml` theme will then be initialized automatically. To inspect the profile path and any symlink target:
 
 ~~~powershell
-Get-Content $PROFILE
+$PROFILE
+Get-Item -Force $PROFILE | Format-List FullName, LinkType, Target
 ~~~
 
 If the repository is cloned somewhere else, the installer automatically uses its own location; no path editing is needed.
