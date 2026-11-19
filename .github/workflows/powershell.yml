@@ -1,0 +1,32 @@
+name: PowerShell checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate syntax and profile loading
+        shell: pwsh
+        run: ./tests/validate.ps1
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          $issues = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error
+          $issues | Format-Table -AutoSize
+          if ($issues) {
+            throw "PSScriptAnalyzer reported $($issues.Count) error(s)."
+          }
