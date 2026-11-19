@@ -1,0 +1,83 @@
+#:schema https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json
+
+version = 2
+final_space = true
+console_title_template = '{{ .Shell }} in {{ .Folder }}'
+
+[[blocks]]
+  type = 'prompt'
+  alignment = 'left'
+  newline = true
+
+  [[blocks.segments]]
+    type = 'path'
+    style = 'plain'
+    foreground = '#7FBBB3'
+    background = 'transparent'
+    template = ' {{ .Path }}'
+
+    [blocks.segments.properties]
+      style = 'full'
+
+  [[blocks.segments]]
+    type = 'git'
+    style = 'plain'
+    foreground = '#A7C080'
+    background = 'transparent'
+    template = ' {{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <yellow>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
+
+    [blocks.segments.properties]
+      branch_icon = ''
+      commit_icon = '@'
+      fetch_status = true
+
+[[blocks]]
+  type = 'rprompt'
+  overflow = 'hidden'
+
+  [[blocks.segments]]
+    type = 'vimode'
+    style = 'plain'
+    background = 'transparent'
+    foreground_templates = [
+      '{{if eq .Mode "insert"}}#A7C080{{else if eq .Mode "normal"}}#DBBC7F{{else if eq .Mode "visual"}}#7FBBB3{{else if eq .Mode "viopp"}}#D699B6{{else if eq .Mode "replace"}}#E67E80{{else}}#D3C6AA{{end}}',
+    ]
+    template = '{{if eq .Mode "insert"}} I{{else if eq .Mode "normal"}} N{{else if eq .Mode "visual"}} V{{else if eq .Mode "viopp"}} O{{else if eq .Mode "replace"}} R{{else}} {{upper .Mode}}{{end}}'
+
+  [[blocks.segments]]
+    type = 'executiontime'
+    style = 'plain'
+    foreground = '#DBBC7F'
+    background = 'transparent'
+    template = ' {{ .FormattedMs }}'
+
+    [blocks.segments.properties]
+      threshold = 5000
+
+[[blocks]]
+  type = 'prompt'
+  alignment = 'left'
+  newline = true
+
+  [[blocks.segments]]
+    type = 'text'
+    style = 'plain'
+    foreground_templates = [
+      '{{if gt .Code 0}}#E67E80{{end}}',
+      '{{if eq .Code 0}}#D699B6{{end}}',
+    ]
+    background = 'transparent'
+    template = '❯ '
+
+[transient_prompt]
+  foreground_templates = [
+    '{{if gt .Code 0}}#E67E80{{end}}',
+    '{{if eq .Code 0}}#D699B6{{end}}',
+  ]
+  background = 'transparent'
+  template = '❯ '
+
+[secondary_prompt]
+  foreground = '#D699B6'
+  background = 'transparent'
+  template = '❯❯ '
