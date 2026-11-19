@@ -2,11 +2,15 @@
 # Safe to run repeatedly. Existing profile content is preserved.
 # Existing profile symlinks are never modified.
 
+param(
+    [string]$ProfilePath = $PROFILE
+)
+
 $ErrorActionPreference = 'Stop'
 
 $repoProfile = Join-Path $PSScriptRoot 'Microsoft.PowerShell_profile.ps1'
 $theme = Join-Path $PSScriptRoot 'zen.toml'
-$targetProfile = $PROFILE
+$targetProfile = $ProfilePath
 
 if (-not (Test-Path -LiteralPath $repoProfile -PathType Leaf)) {
     throw "Repository profile not found: $repoProfile"
@@ -19,6 +23,15 @@ if (-not (Test-Path -LiteralPath $theme -PathType Leaf)) {
 # Many setups link $PROFILE directly to this repository's entrypoint.
 # In that arrangement the profile is already installed. Writing a managed
 # block through the symlink would make the entrypoint source itself forever.
+if (Test-Path -LiteralPath $targetProfile -PathType Container) {
+    throw "Profile path is a directory: $targetProfile"
+}
+
+$existingProfileItem = Get-Item -LiteralPath $targetProfile -Force -ErrorAction SilentlyContinue
+if ($existingProfileItem -and $existingProfileItem.LinkType -eq 'SymbolicLink' -and -not (Test-Path -LiteralPath $targetProfile)) {
+    throw "The profile is a broken symbolic link: $targetProfile"
+}
+
 if (Test-Path -LiteralPath $targetProfile -PathType Leaf) {
     $profileItem = Get-Item -LiteralPath $targetProfile -Force
     $resolvedTarget = (Resolve-Path -LiteralPath $targetProfile).ProviderPath

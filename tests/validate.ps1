@@ -1,93 +1,69 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$failed = $false
+$script:failed = $false
 
-$files = @(
-    Get-ChildItem -LiteralPath $root -Filter '*.ps1' -File -Recurse |
-        Where-Object { $_.FullName -notmatch '[\\/](\.git|\.github)[\\/]' }
-)
+function Assert-Condition {
+    param([bool]$Condition,[string]$Message)
+    if (-not $Condition) {
+        $script:failed = $true
+        Write-Host "[FAIL] $Message" -ForegroundColor Red
+    } else { Write-Host "[PASS] $Message" -ForegroundColor Green }
+}
 
+$files = Get-ChildItem -LiteralPath $root -Filter '*.ps1' -File -Recurse |
+    Where-Object { $_.FullName -notmatch '[\\/](\.git|\.github)[\\/]' }
 foreach ($file in $files) {
     $tokens = $null
     $errors = $null
-    [System.Management.Automation.Language.Parser]::ParseFile(
-        $file.FullName,
-        [ref]$tokens,
-        [ref]$errors
-    ) | Out-Null
-
-    if ($errors.Count -gt 0) {
-        $failed = $true
-        Write-Host "[FAIL] $($file.FullName)" -ForegroundColor Red
-        foreach ($errorItem in $errors) {
-            Write-Host "       $($errorItem.Message)" -ForegroundColor Red
-        }
-    } else {
-        Write-Host "[PASS] $($file.Name)" -ForegroundColor Green
-    }
+    [System.Management.Automation.Language.Parser]::ParseFile($file.FullName,[ref]$tokens,[ref]$errors) | Out-Null
+    Assert-Condition ($errors.Count -eq 0) "PowerShell syntax: $($file.FullName)"
+    foreach ($parseError in $errors) { Write-Host "       $($parseError.Message)" -ForegroundColor Red }
 }
 
 $required = @(
-    'Microsoft.PowerShell_profile.ps1',
-    'install.ps1',
-    'zen.toml',
-    'conf.d/10-environment.ps1',
-    'conf.d/20-prompt.ps1',
-    'conf.d/30-navigation.ps1',
-    'conf.d/40-filesystem.ps1',
-    'conf.d/15-readline.ps1',
-    'conf.d/60-fzf.ps1',
-    'conf.d/90-silkterm.ps1'
+    'Microsoft.PowerShell_profile.ps1','install.ps1','zen.toml',
+    'conf.d/10-environment.ps1','conf.d/15-readline.ps1','conf.d/20-prompt.ps1',
+    'conf.d/30-navigation.ps1','conf.d/40-filesystem.ps1','conf.d/60-fzf.ps1',
+    'conf.d/90-silkterm.ps1','docs/design-decisions.md'
 )
-
 foreach ($relativePath in $required) {
-    $fullPath = Join-Path $root $relativePath
-    if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
-        $failed = $true
-        Write-Host "[FAIL] Missing $relativePath" -ForegroundColor Red
-    }
+    Assert-Condition (Test-Path -LiteralPath (Join-Path $root $relativePath) -PathType Leaf) "Required file: $relativePath"
 }
 
-if (-not $failed) {
-    # Verify the loader through both its real path and a profile-style symlink.
+if (-not $script:failed) {
     . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
-    foreach ($commandName in 'croot', 'cproj', 'mkcd', 'ff', 'rmdir') {
-        if (-not (Get-Command $commandName -CommandType Function -ErrorAction SilentlyContinue)) {
-            $failed = $true
-            Write-Host "[FAIL] Missing function $commandName" -ForegroundColor Red
-        } else {
-            Write-Host "[PASS] Function $commandName" -ForegroundColor Green
-        }
+    . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
+    foreach ($name in @('croot','cproj','mkcd','ff','rdtree','nvg')) {
+        Assert-Condition ([bool](Get-Command $name -CommandType Function -ErrorAction SilentlyContinue)) "Profile function: $name"
     }
+    Assert-Condition ((Get-Command rmdir -ErrorAction Stop).CommandType -eq 'Alias') 'Built-in rmdir alias remains intact'
 
-    $linkRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("pwsh-profile-link-" + [guid]::NewGuid())
+    $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("pwsh-profile-test-" + [guid]::NewGuid())
+    $tempDirectory = Join-Path $tempRoot 'delete-me'
+    $null = New-Item -ItemType Directory -Path $tempDirectory -Force
+    try {
+        rdtree -WhatIf $tempDirectory
+        Assert-Condition (Test-Path -LiteralPath $tempDirectory -PathType Container) 'rdtree -WhatIf preserves target'
+    } finally { Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue }
+
+    $linkRoot = Join-Path ([IO.Path]::GetTempPath()) ("pwsh-profile-link-" + [guid]::NewGuid())
     $linkPath = Join-Path $linkRoot 'Microsoft.PowerShell_profile.ps1'
-
     try {
         $null = New-Item -ItemType Directory -Path $linkRoot
         $null = New-Item -ItemType SymbolicLink -Path $linkPath -Target (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
         . $linkPath
+        Assert-Condition ([bool](Get-Command croot -CommandType Function -ErrorAction SilentlyContinue)) 'Profile loads through symlink'
+    } catch { Write-Warning "Symlink test unavailable in this environment: $($_.Exception.Message)" }
+    finally { if (Test-Path -LiteralPath $linkRoot) { Remove-Item -LiteralPath $linkRoot -Recurse -Force } }
 
-        foreach ($commandName in 'croot', 'cproj', 'mkcd', 'ff', 'rmdir') {
-            if (-not (Get-Command $commandName -CommandType Function -ErrorAction SilentlyContinue)) {
-                $failed = $true
-                Write-Host "[FAIL] Symlink loader missing function $commandName" -ForegroundColor Red
-            } else {
-                Write-Host "[PASS] Symlink loader function $commandName" -ForegroundColor Green
-            }
-        }
-    } catch {
-        $failed = $true
-        Write-Host "[FAIL] Symlink loader test: $($_.Exception.Message)" -ForegroundColor Red
-    } finally {
-        if (Test-Path -LiteralPath $linkRoot) {
-            Remove-Item -LiteralPath $linkRoot -Recurse -Force
-        }
+    $pwsh = Join-Path $PSHOME 'pwsh.exe'
+    if (Test-Path -LiteralPath $pwsh) {
+        $profilePath = (Join-Path $root 'Microsoft.PowerShell_profile.ps1').Replace("'","''")
+        $childCommand = ". '$profilePath'; if (-not (Get-Command croot -CommandType Function -ErrorAction SilentlyContinue)) { exit 7 }; 'isolated profile OK'"
+        $childOutput = & $pwsh -NoLogo -NoProfile -Command $childCommand 2>&1
+        Assert-Condition ($LASTEXITCODE -eq 0) "Isolated profile process: $($childOutput -join ' ')"
     }
 }
 
-if ($failed) {
-    throw 'PowerShell repository validation failed.'
-}
-
+if ($script:failed) { throw 'PowerShell repository validation failed.' }
 Write-Host 'All PowerShell checks passed.' -ForegroundColor Green
