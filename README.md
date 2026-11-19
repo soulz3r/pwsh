@@ -70,13 +70,13 @@ Copy-Item $PROFILE "$PROFILE.backup" -Force
 Clone the repository:
 
 ~~~powershell
-git clone https://github.com/soulz3r/pwsh.git "$HOME/.config/powershell"
+git clone https://github.com/soulz3r/pwsh.git D:\\config\\powershell
 ~~~
 
 Make the PowerShell profile load this repository. Run once:
 
 ~~~powershell
-$profileRoot = Join-Path $HOME '.config/powershell'
+$profileRoot = 'D:\\config\\powershell'
 New-Item -ItemType Directory -Path (Split-Path $PROFILE) -Force | Out-Null
 Set-Content -LiteralPath $PROFILE -Value ". '$profileRoot/Microsoft.PowerShell_profile.ps1'"
 ~~~
