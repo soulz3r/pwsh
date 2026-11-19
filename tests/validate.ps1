@@ -49,7 +49,7 @@ foreach ($relativePath in $required) {
 }
 
 if (-not $failed) {
-    # Dot-source in a clean process in CI to verify the loader defines core commands.
+    # Verify the loader through both its real path and a profile-style symlink.
     . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
     foreach ($commandName in 'croot', 'cproj', 'mkcd', 'ff', 'rmdir') {
         if (-not (Get-Command $commandName -CommandType Function -ErrorAction SilentlyContinue)) {
@@ -57,6 +57,31 @@ if (-not $failed) {
             Write-Host "[FAIL] Missing function $commandName" -ForegroundColor Red
         } else {
             Write-Host "[PASS] Function $commandName" -ForegroundColor Green
+        }
+    }
+
+    $linkRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("pwsh-profile-link-" + [guid]::NewGuid())
+    $linkPath = Join-Path $linkRoot 'Microsoft.PowerShell_profile.ps1'
+
+    try {
+        $null = New-Item -ItemType Directory -Path $linkRoot
+        $null = New-Item -ItemType SymbolicLink -Path $linkPath -Target (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
+        . $linkPath
+
+        foreach ($commandName in 'croot', 'cproj', 'mkcd', 'ff', 'rmdir') {
+            if (-not (Get-Command $commandName -CommandType Function -ErrorAction SilentlyContinue)) {
+                $failed = $true
+                Write-Host "[FAIL] Symlink loader missing function $commandName" -ForegroundColor Red
+            } else {
+                Write-Host "[PASS] Symlink loader function $commandName" -ForegroundColor Green
+            }
+        }
+    } catch {
+        $failed = $true
+        Write-Host "[FAIL] Symlink loader test: $($_.Exception.Message)" -ForegroundColor Red
+    } finally {
+        if (Test-Path -LiteralPath $linkRoot) {
+            Remove-Item -LiteralPath $linkRoot -Recurse -Force
         }
     }
 }
