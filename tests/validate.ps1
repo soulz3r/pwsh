@@ -61,10 +61,10 @@ Assert-Condition ($vimodeIndex -ge 0 -and $promptIndex -gt $vimodeIndex) 'Vi mod
 Assert-Condition ($theme -notmatch "(?m)^\s*type\s*=\s*'rprompt'\s*$") 'Prompt does not use a far-right mode indicator'
 Assert-Condition ($theme -notmatch '\.Behind|\.Ahead') 'Git prompt avoids ahead/behind status probes'
 Assert-Condition ($theme -notmatch '(?m)^\s*fetch_status\s*=') 'Git prompt does not use an obsolete fetch_status option'
-Assert-Condition ($theme -match "template = ' \\{\\{ \\.Path \\}\\}'") 'Prompt path has a folder marker'
+Assert-Condition ($theme.Contains("template = ' {{ .Path }}'")) 'Prompt path has a folder marker'
 Assert-Condition ($theme -match 'style = ''agnoster_git''[\s\S]*max_width = 42') 'Prompt path is shortened to a readable width'
-Assert-Condition ($theme -match ' \\{\\{ \\.HEAD \\}\\}') 'Git branch has a distinct marker'
-Assert-Condition ($theme -match 'template = ''   \\{\\{ \\.FormattedMs \\}\\}''') 'Command duration has a restrained indicator'
+Assert-Condition ($theme.Contains(' {{ .HEAD }}')) 'Git branch has a distinct marker'
+Assert-Condition ($theme.Contains("template = '   {{ .FormattedMs }}'")) 'Command duration has a restrained indicator'
 
 $navigationSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/30-navigation.ps1') -Raw
 Assert-Condition ($navigationSource -match '--hook \$hookMode') 'zoxide uses an explicit change-aware hook on modern PowerShell'
