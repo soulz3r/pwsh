@@ -106,15 +106,13 @@ function llt {
 }
 
 function nvg {
-    [CmdletBinding()]
-    param([Parameter(ValueFromRemainingArguments)][string[]]$Arguments)
-
     $neovide = Get-Command neovide -CommandType Application -ErrorAction SilentlyContinue
     if (-not $neovide) {
         throw 'nvg requires Neovide to be installed and available on PATH.'
     }
 
-    & $neovide.Source --frame none @Arguments
+    # Preserve the native executable's full argument behavior.
+    & $neovide.Source --frame none @args
 }
 
 # Preserve PowerShell's built-in rmdir alias. Recursive deletion is explicit.
