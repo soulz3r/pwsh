@@ -29,6 +29,7 @@ foreach ($file in $files) {
 
 $required = @(
     'Microsoft.PowerShell_profile.ps1',
+    'install.ps1',
     'zen.toml',
     'conf.d/10-environment.ps1',
     'conf.d/20-prompt.ps1',
