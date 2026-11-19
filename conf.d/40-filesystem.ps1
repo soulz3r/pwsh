@@ -1,5 +1,7 @@
 # lsd is optional; native PowerShell commands remain available as fallbacks.
-if (Get-Command lsd -ErrorAction SilentlyContinue) { Remove-Item Alias:ls -Force -ErrorAction SilentlyContinue }
+# Remove the built-in ls alias even without lsd, otherwise it shadows our function.
+Remove-Item Alias:ls -Force -ErrorAction SilentlyContinue
+
 function ls { if (Get-Command lsd -ErrorAction SilentlyContinue) { lsd @args } else { Get-ChildItem @args } }
 function ll { if (Get-Command lsd -ErrorAction SilentlyContinue) { lsd -l @args } else { Get-ChildItem @args | Format-Table -AutoSize } }
 function la { if (Get-Command lsd -ErrorAction SilentlyContinue) { lsd -la @args } else { Get-ChildItem -Force @args } }
