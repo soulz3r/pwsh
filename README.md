@@ -12,6 +12,7 @@ A modular PowerShell profile built around a fast interactive shell, practical te
 - Project navigation with `croot` and `cproj`.
 - File search with `ff`, directory creation with `mkcd`, and safe recursive `rmdir`.
 - SilkTerm shell integration isolated from the rest of the profile.
+- One-command profile installer that preserves and backs up an existing PowerShell profile.
 - PowerShell parser checks and PSScriptAnalyzer in GitHub Actions.
 
 Optional tools are checked before use. Missing optional executables should not prevent the profile from loading.
@@ -30,6 +31,7 @@ pwsh/
 │   ├── 60-fzf.ps1
 │   └── 90-silkterm.ps1
 ├── tests/validate.ps1
+├── install.ps1
 ├── Microsoft.PowerShell_profile.ps1
 ├── zen.toml
 ├── .gitignore
@@ -61,33 +63,28 @@ Install-Module PSFzf -Scope CurrentUser
 
 ## Install
 
-Back up your current profile:
-
-~~~powershell
-Copy-Item $PROFILE "$PROFILE.backup" -Force
-~~~
-
 Clone the repository:
 
 ~~~powershell
-git clone https://github.com/soulz3r/pwsh.git D:\\config\\powershell
+git clone https://github.com/soulz3r/pwsh.git D:\config\powershell
+Set-Location D:\config\powershell
 ~~~
 
-Make the PowerShell profile load this repository. Run once:
+Run the installer with PowerShell 7:
 
 ~~~powershell
-$profileRoot = 'D:\\config\\powershell'
-New-Item -ItemType Directory -Path (Split-Path $PROFILE) -Force | Out-Null
-Set-Content -LiteralPath $PROFILE -Value ". '$profileRoot/Microsoft.PowerShell_profile.ps1'"
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 ~~~
 
-Restart PowerShell, or reload with:
+The installer registers this repository's profile in the current user's PowerShell profile. It preserves existing profile content, creates a timestamped backup before changing the file, and safely replaces its own managed block when run again. It does not install Oh My Posh itself.
+
+Restart PowerShell. The repository's `zen.toml` theme will then be initialized automatically. To check that the registration exists:
 
 ~~~powershell
-. $PROFILE
+Get-Content $PROFILE
 ~~~
 
-If you keep the clone elsewhere, change `$profileRoot` to that path.
+If the repository is cloned somewhere else, the installer automatically uses its own location; no path editing is needed.
 
 ## Commands
 
