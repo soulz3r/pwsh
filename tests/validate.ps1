@@ -46,6 +46,23 @@ if (-not $script:failed) {
         Assert-Condition (Test-Path -LiteralPath $tempDirectory -PathType Container) 'rdtree -WhatIf preserves target'
     } finally { Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue }
 
+    # Exercise installer writes against a disposable profile, never the real one.
+    $installRoot = Join-Path ([IO.Path]::GetTempPath()) ("pwsh-installer-test-" + [guid]::NewGuid())
+    $installProfile = Join-Path $installRoot 'profile.ps1'
+    $null = New-Item -ItemType Directory -Path $installRoot -Force
+    Set-Content -LiteralPath $installProfile -Value '# existing user content'
+    try {
+        & (Join-Path $root 'install.ps1') -ProfilePath $installProfile
+        $firstInstall = Get-Content -LiteralPath $installProfile -Raw
+        Assert-Condition ($firstInstall.Contains('# existing user content') -and $firstInstall.Contains('# >>> soulz3r/pwsh managed profile >>>')) 'Installer preserves existing content and adds managed block'
+        & (Join-Path $root 'install.ps1') -ProfilePath $installProfile
+        $secondInstall = Get-Content -LiteralPath $installProfile -Raw
+        $backups = @(Get-ChildItem -LiteralPath $installRoot -Filter 'profile.ps1.backup-*' -File)
+        Assert-Condition ($firstInstall -ceq $secondInstall -and $backups.Count -eq 1) 'Installer is idempotent and backs up only the first change'
+    } finally {
+        Remove-Item -LiteralPath $installRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
     $linkRoot = Join-Path ([IO.Path]::GetTempPath()) ("pwsh-profile-link-" + [guid]::NewGuid())
     $linkPath = Join-Path $linkRoot 'Microsoft.PowerShell_profile.ps1'
     try {

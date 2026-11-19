@@ -34,11 +34,45 @@ function Get-PwshProjectDirectories {
         & $fd.Source @arguments '.' $Root 2>$null
         return
     }
-    Get-ChildItem -LiteralPath $Root -Directory -Recurse -Depth 3 -Force -ErrorAction SilentlyContinue |
-        Where-Object {
-            $segments = $_.FullName -split '[\\/]'
-            -not ($segments | Where-Object { $_ -in $excluded })
-        } | ForEach-Object FullName
+    Get-PwshDirectoriesFallback -Root $Root -MaxDepth 3
+}
+
+function Get-PwshDirectoriesFallback {
+    param([Parameter(Mandatory)][string]$Root,[int]$MaxDepth = 3)
+    $excluded = @('.git','node_modules','.venv','venv','bin','obj','build','dist','target')
+    $pending = [System.Collections.Generic.Stack[object]]::new()
+    $pending.Push([pscustomobject]@{ Path = $Root; Depth = 0 })
+    while ($pending.Count -gt 0) {
+        $current = $pending.Pop()
+        if ($current.Depth -ge $MaxDepth) { continue }
+        Get-ChildItem -LiteralPath $current.Path -Directory -Force -ErrorAction SilentlyContinue |
+            ForEach-Object {
+                if ($_.Name -notin $excluded -and -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                    $_.FullName
+                    $pending.Push([pscustomobject]@{ Path = $_.FullName; Depth = $current.Depth + 1 })
+                }
+            }
+    }
+}
+
+function Get-PwshFilesFallback {
+    param([Parameter(Mandatory)][string]$Root)
+    $excluded = @('.git','node_modules','.venv','venv','bin','obj','build','dist','target')
+    $pending = [System.Collections.Generic.Stack[string]]::new()
+    $pending.Push($Root)
+    while ($pending.Count -gt 0) {
+        $current = $pending.Pop()
+        Get-ChildItem -LiteralPath $current -Force -ErrorAction SilentlyContinue |
+            ForEach-Object {
+                if ($_.PSIsContainer) {
+                    if ($_.Name -notin $excluded -and -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                        $pending.Push($_.FullName)
+                    }
+                } else {
+                    $_.FullName
+                }
+            }
+    }
 }
 
 function cproj {
@@ -61,12 +95,7 @@ function ff {
     if ($fd) {
         $files = & $fd.Source --type f --hidden --color never --exclude .git --exclude node_modules --exclude .venv --exclude venv --exclude bin --exclude obj --exclude build --exclude dist --exclude target '.' $Root 2>$null
     } else {
-        $excluded = @('.git','node_modules','.venv','venv','bin','obj','build','dist','target')
-        $files = Get-ChildItem -LiteralPath $Root -File -Recurse -Force -ErrorAction SilentlyContinue |
-            Where-Object {
-                $segments = $_.FullName -split '[\\/]'
-                -not ($segments | Where-Object { $_ -in $excluded })
-            } | ForEach-Object FullName
+        $files = Get-PwshFilesFallback -Root $Root
     }
     $selected = $files | fzf --prompt='file ❯ ' --height=60% --layout=reverse
     if (-not [string]::IsNullOrWhiteSpace($selected)) { Set-Clipboard -Value $selected.Trim() }
