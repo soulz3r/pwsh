@@ -34,7 +34,7 @@ $required = @(
     'conf.d/20-prompt.ps1',
     'conf.d/30-navigation.ps1',
     'conf.d/40-filesystem.ps1',
-    'conf.d/50-readline.ps1',
+    'conf.d/15-readline.ps1',
     'conf.d/60-fzf.ps1',
     'conf.d/90-silkterm.ps1'
 )
