@@ -4,7 +4,7 @@ version = 4
 final_space = true
 console_title_template = '{{ .Shell }} · {{ .Folder }}'
 
-# Line one: a readable location, followed by Git context when available.
+# Line one: path and Git context as separate Everforest chips.
 [[blocks]]
   type = 'prompt'
   alignment = 'left'
@@ -12,10 +12,12 @@ console_title_template = '{{ .Shell }} · {{ .Folder }}'
 
   [[blocks.segments]]
     type = 'path'
-    style = 'plain'
-    foreground = '#A7C080'
-    background = 'transparent'
-    template = ' {{ .Path }}'
+    style = 'diamond'
+    leading_diamond = ''
+    trailing_diamond = ''
+    foreground = '#2D353B'
+    background = '#A7C080'
+    template = '  {{ .Path }} '
 
     [blocks.segments.properties]
       style = 'agnoster_git'
@@ -26,17 +28,19 @@ console_title_template = '{{ .Shell }} · {{ .Folder }}'
 
   [[blocks.segments]]
     type = 'git'
-    style = 'plain'
+    style = 'diamond'
+    leading_diamond = ''
+    trailing_diamond = ''
     foreground = '#D3C6AA'
-    background = 'transparent'
-    template = '  <#7A8478>on</> <#D3C6AA> {{ .HEAD }}</>{{ if .Staging.Changed }} <#A7C080>●</>{{ end }}{{ if .Working.Changed }} <#DBBC7F>✚</>{{ end }}'
+    background = '#3D4843'
+    template = '  {{ .HEAD }}{{ if .Staging.Changed }}  <#A7C080>●</>{{ end }}{{ if .Working.Changed }}  <#DBBC7F>✚</>{{ end }} '
 
     [blocks.segments.properties]
       branch_icon = ''
       commit_icon = '@'
       resolve_rebase_target = false
 
-# Line two: compact Vi state, useful command duration, and the input cursor.
+# Line two: mode-colored Vi chip, optional command duration, and input arrow.
 [[blocks]]
   type = 'prompt'
   alignment = 'left'
@@ -44,19 +48,21 @@ console_title_template = '{{ .Shell }} · {{ .Folder }}'
 
   [[blocks.segments]]
     type = 'vimode'
-    style = 'plain'
-    background = 'transparent'
-    foreground_templates = [
+    style = 'diamond'
+    leading_diamond = ''
+    trailing_diamond = ''
+    foreground = '#2D353B'
+    background_templates = [
       '{{if eq .Mode "insert"}}#A7C080{{else if eq .Mode "normal"}}#DBBC7F{{else if eq .Mode "visual"}}#7FBBB3{{else if eq .Mode "viopp"}}#D699B6{{else if eq .Mode "replace"}}#E67E80{{else}}#D3C6AA{{end}}',
     ]
-    template = ' {{if eq .Mode "insert"}}I{{else if eq .Mode "normal"}}N{{else if eq .Mode "visual"}}V{{else if eq .Mode "viopp"}}O{{else if eq .Mode "replace"}}R{{else}}{{upper .Mode}}{{end}}'
+    template = '  {{if eq .Mode "insert"}}I{{else if eq .Mode "normal"}}N{{else if eq .Mode "visual"}}V{{else if eq .Mode "viopp"}}O{{else if eq .Mode "replace"}}R{{else}}{{upper .Mode}}{{end}} '
 
   [[blocks.segments]]
     type = 'executiontime'
     style = 'plain'
     foreground = '#7A8478'
     background = 'transparent'
-    template = '   {{ .FormattedMs }}'
+    template = '  󰔛 {{ .FormattedMs }}'
 
     [blocks.segments.properties]
       threshold = 1000

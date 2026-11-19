@@ -59,12 +59,13 @@ $promptIndex = $theme.IndexOf("type = 'text'", [StringComparison]::Ordinal)
 Assert-Condition ($theme -match '(?m)^version\s*=\s*4\s*$') 'Oh My Posh theme uses current config version'
 Assert-Condition ($vimodeIndex -ge 0 -and $promptIndex -gt $vimodeIndex) 'Vi mode renders before the prompt symbol'
 Assert-Condition ($theme -notmatch "(?m)^\s*type\s*=\s*'rprompt'\s*$") 'Prompt does not use a far-right mode indicator'
-Assert-Condition ($theme -notmatch '\.Behind|\.Ahead') 'Git prompt avoids ahead/behind status probes'
+Assert-Condition ($theme -notmatch '\\.Behind|\\.Ahead') 'Git prompt avoids ahead/behind status probes'
 Assert-Condition ($theme -notmatch '(?m)^\s*fetch_status\s*=') 'Git prompt does not use an obsolete fetch_status option'
-Assert-Condition ($theme.Contains("template = ' {{ .Path }}'")) 'Prompt path has a folder marker'
-Assert-Condition ($theme -match 'style = ''agnoster_git''[\s\S]*max_width = 42') 'Prompt path is shortened to a readable width'
-Assert-Condition ($theme.Contains(' {{ .HEAD }}')) 'Git branch has a distinct marker'
-Assert-Condition ($theme.Contains("template = '   {{ .FormattedMs }}'")) 'Command duration has a restrained indicator'
+Assert-Condition ($theme.Contains("style = 'diamond'")) 'Prompt uses native Oh My Posh diamond segments'
+Assert-Condition ($theme.Contains("leading_diamond = ''") -and $theme.Contains("trailing_diamond = ''")) 'Prompt chips use paired rounded separators'
+Assert-Condition ($theme.Contains("background_templates = [")) 'Vi chip has a mode-aware background color'
+Assert-Condition ($theme.Contains("template = '  {{ .HEAD }}")) 'Git branch has a distinct Nerd Font marker'
+Assert-Condition ($theme.Contains("template = '  󰔛 {{ .FormattedMs }}'")) 'Command duration has a restrained indicator'
 
 $navigationSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/30-navigation.ps1') -Raw
 Assert-Condition ($navigationSource -match '--hook \$hookMode') 'zoxide uses an explicit change-aware hook on modern PowerShell'
