@@ -4,7 +4,7 @@ A modular PowerShell profile built around a fast interactive shell, practical te
 
 ## Features
 - Repository-local Oh My Posh theme.
-- PSReadLine Vi editing with Oh My Posh live mode indicator integration.
+- PSReadLine Vi editing with the Oh My Posh live mode-change handler.
 - Compact Vim labels: ` I`, ` N`, ` V`, ` O`, and ` R`.
 - Everforest colors, Git status, and command execution time.
 - Optional zoxide, fd, fzf, PSFzf, and lsd integrations.
@@ -26,7 +26,7 @@ pwsh/
 └── README.md
 ```
 
-The root profile is the entrypoint and loader. Put features in focused files under `conf.d/`; files load alphabetically. PSReadLine configures Vi editing first. Oh My Posh initializes its own live Vi-mode callback and prompt indicator.
+The root profile is the entrypoint and loader. Put features in focused files under `conf.d/`; files load alphabetically. PSReadLine configures Vi editing first. Oh My Posh's `vimode` segment installs the script-based mode-change handler and redraws the prompt when the mode changes.
 
 ## Requirements
 PowerShell 7 is recommended. The prompt uses [Oh My Posh](https://ohmyposh.dev/) and a [Nerd Font](https://www.nerdfonts.com/) for the Vim glyph.
@@ -69,7 +69,7 @@ The installer preserves existing profile content, creates a timestamped backup b
 
 The project root uses `D:\projects` when it exists, otherwise `~/projects`. Set `$env:PROJECTS_DIR` before loading the profile to override it.
 
-Search prefers `fd` and excludes common generated/vendor directories. PowerShell provides a fallback when `fd` is unavailable.
+Search prefers `fd` and excludes common generated/vendor directories. The PowerShell fallback for `ff` is deliberately limited to five directory levels so a missing `fd` executable does not trigger an unbounded walk.
 
 Preview deletion with `rdtree -WhatIf .\some-folder`. PowerShell's built-in `rmdir` alias is left untouched.
 

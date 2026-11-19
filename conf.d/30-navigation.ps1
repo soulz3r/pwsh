@@ -56,17 +56,17 @@ function Get-PwshDirectoriesFallback {
 }
 
 function Get-PwshFilesFallback {
-    param([Parameter(Mandatory)][string]$Root)
+    param([Parameter(Mandatory)][string]$Root,[int]$MaxDepth = 5)
     $excluded = @('.git','node_modules','.venv','venv','bin','obj','build','dist','target')
-    $pending = [System.Collections.Generic.Stack[string]]::new()
-    $pending.Push($Root)
+    $pending = [System.Collections.Generic.Stack[object]]::new()
+    $pending.Push([pscustomobject]@{ Path = $Root; Depth = 0 })
     while ($pending.Count -gt 0) {
         $current = $pending.Pop()
-        Get-ChildItem -LiteralPath $current -Force -ErrorAction SilentlyContinue |
+        Get-ChildItem -LiteralPath $current.Path -Force -ErrorAction SilentlyContinue |
             ForEach-Object {
                 if ($_.PSIsContainer) {
-                    if ($_.Name -notin $excluded -and -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
-                        $pending.Push($_.FullName)
+                    if ($current.Depth -lt $MaxDepth -and $_.Name -notin $excluded -and -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                        $pending.Push([pscustomobject]@{ Path = $_.FullName; Depth = $current.Depth + 1 })
                     }
                 } else {
                     $_.FullName
@@ -95,7 +95,7 @@ function ff {
     if ($fd) {
         $files = & $fd.Source --type f --hidden --color never --exclude .git --exclude node_modules --exclude .venv --exclude venv --exclude bin --exclude obj --exclude build --exclude dist --exclude target '.' $Root 2>$null
     } else {
-        $files = Get-PwshFilesFallback -Root $Root
+        $files = Get-PwshFilesFallback -Root $Root -MaxDepth 5
     }
     $selected = $files | fzf --prompt='file ❯ ' --height=60% --layout=reverse
     if (-not [string]::IsNullOrWhiteSpace($selected)) { Set-Clipboard -Value $selected.Trim() }

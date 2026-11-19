@@ -33,7 +33,7 @@ foreach ($relativePath in $required) {
 if (-not $script:failed) {
     . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
     . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
-    foreach ($name in @('croot','cproj','mkcd','ff','rdtree','nvg')) {
+    foreach ($name in @('croot','cproj','mkcd','ff','rdtree','nvg','ls','ll','la')) {
         Assert-Condition ([bool](Get-Command $name -CommandType Function -ErrorAction SilentlyContinue)) "Profile function: $name"
     }
     Assert-Condition ((Get-Command rmdir -ErrorAction Stop).CommandType -eq 'Alias') 'Built-in rmdir alias remains intact'
@@ -45,6 +45,18 @@ if (-not $script:failed) {
         rdtree -WhatIf $tempDirectory
         Assert-Condition (Test-Path -LiteralPath $tempDirectory -PathType Container) 'rdtree -WhatIf preserves target'
     } finally { Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue }
+
+    $searchRoot = Join-Path ([IO.Path]::GetTempPath()) ("pwsh-search-test-" + [guid]::NewGuid())
+    $childRoot = Join-Path $searchRoot 'child'
+    $deepRoot = Join-Path $childRoot 'deep'
+    $null = New-Item -ItemType Directory -Path $deepRoot -Force
+    Set-Content -LiteralPath (Join-Path $searchRoot 'root.txt') -Value 'root'
+    Set-Content -LiteralPath (Join-Path $childRoot 'child.txt') -Value 'child'
+    Set-Content -LiteralPath (Join-Path $deepRoot 'deep.txt') -Value 'deep'
+    try {
+        $boundedFiles = @(Get-PwshFilesFallback -Root $searchRoot -MaxDepth 1)
+        Assert-Condition (($boundedFiles | Where-Object { $_ -like '*root.txt' }).Count -eq 1 -and ($boundedFiles | Where-Object { $_ -like '*child.txt' }).Count -eq 1 -and ($boundedFiles | Where-Object { $_ -like '*deep.txt' }).Count -eq 0) 'PowerShell file-search fallback respects depth limit'
+    } finally { Remove-Item -LiteralPath $searchRoot -Recurse -Force -ErrorAction SilentlyContinue }
 
     # Exercise installer writes against a disposable profile, never the real one.
     $installRoot = Join-Path ([IO.Path]::GetTempPath()) ("pwsh-installer-test-" + [guid]::NewGuid())
