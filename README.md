@@ -6,20 +6,20 @@ A modular PowerShell profile built around a fast interactive shell, practical te
 
 The prompt is deliberately two lines:
 
-- The first line uses separate rounded Everforest chips for the shortened path and Git state.
-- Staged and unstaged changes use separate markers.
-- The second line uses a Vi chip whose background changes with the editing mode: ( I,  N,  V,  O, or  R).
-- Commands taking at least one second show a muted duration indicator.
+- The first line shows a shortened path and, inside Git repositories, a quiet branch name.
+- Staged and unstaged changes use small `+` and `*` markers.
+- The second line keeps the Vi indicator beside the input arrow: ( I,  N,  V,  O, or  R).
+- Commands taking at least one second show a muted duration.
 - A failed command changes the input arrow to the error color.
 
 Example:
 
 ~~~text
-  D:\config\powershell     main 
-  I   ❯
+D:/projects  main
+ I ❯
 ~~~
 
-The Vi indicator stays beside the input arrow instead of being pushed to the far-right edge of the terminal. The path shortens intermediate folders only when needed. Git status remains local-only; the prompt does not calculate remote ahead/behind counts.
+The prompt uses plain text on a transparent background, without powerline separators or boxed segments. The path shortens intermediate folders only when needed. Git status remains local-only; the prompt does not calculate remote ahead/behind counts.
 
 ## Features
 

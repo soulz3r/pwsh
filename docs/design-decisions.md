@@ -12,7 +12,7 @@ This is a personal interactive shell configuration, not a general-purpose PowerS
 
 ## Prompt
 
-- Use a left-aligned two-line prompt with separate rounded path and Git chips. Keep the Vi indicator in a mode-colored chip beside the input symbol; do not use a far-right prompt for essential state.
+- Use a left-aligned, two-line prompt with plain text on transparent backgrounds. Keep the path and Git branch quiet, and keep the Vi indicator beside the input symbol. Do not use boxes, powerline separators, or a far-right prompt for essential state.
 - Show the current path, branch, and local staged/working-tree state.
 - Do not calculate remote ahead/behind counts on every prompt render.
 - Keep command duration visible only when it is useful, with a restrained indicator and a one-second threshold.
