@@ -1,6 +1,6 @@
 # pwsh
 
-A minimal PowerShell profile with Oh My Posh, Git context, Vi editing, and a few useful shortcuts.
+A minimal PowerShell profile with Oh My Posh, Git context, and a few useful shortcuts.
 
 ## Prompt
 
@@ -8,10 +8,10 @@ Two plain lines, no boxes or powerline separators:
 
 ```text
 D:/projects  main
- I ❯
+❯
 ```
 
-The first line shows the current path and local Git branch. `+` marks staged changes and `*` marks working-tree changes. The second line shows the PSReadLine Vi mode. Oh My Posh handles prompt rendering and mode-change redraw.
+The first line shows the current path and local Git branch. `+` marks staged changes and `*` marks working-tree changes. The second line is a plain input prompt. PowerShell keeps its default editing mode; there is no Vi-mode prompt integration.
 
 ## Shortcuts
 
@@ -42,13 +42,13 @@ Git shortcuts pass remaining arguments directly to Git. `fzf`, `fd`, and other i
 
 PowerShell 7, Oh My Posh, a Nerd Font, PSReadLine, Git, and Vim. zoxide and lsd are optional.
 
-The project directory defaults to `D:\projects` when it exists, otherwise `~/projects`. Set `PROJECTS_DIR` to override it.
+The project directory defaults to `D:\\projects` when it exists, otherwise `~/projects`. Set `PROJECTS_DIR` to override it.
 
 ## Install
 
 ```powershell
-Set-Location D:\config\powershell
-. .\Microsoft.PowerShell_profile.ps1
+Set-Location D:\\config\\powershell
+. .\\Microsoft.PowerShell_profile.ps1
 ```
 
 Run `./tests/validate.ps1` to check the profile.
