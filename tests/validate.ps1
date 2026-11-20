@@ -36,11 +36,15 @@ $promptSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/20-prompt.ps1'
 Assert-Condition ($promptSource -match '\$ohMyPosh\.Source init pwsh --config') 'Profile initializes Oh My Posh'
 Assert-Condition ($promptSource -match '__zoxide_prompt_old') 'Prompt reload restores zoxide wrapper safely'
 
+$toolsSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/40-tools.ps1') -Raw
+Assert-Condition ($toolsSource -match 'Get-Command lsd') 'lsd integration is optional'
+Assert-Condition ($toolsSource -match 'Set-Alias -Name ls') 'ls uses lsd when installed'
+
 . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
 foreach ($name in @('croot', 'mkcd', 'g', 'gs', 'ga', 'gco', 'gcb', 'gcm', 'gpl', 'gps', 'glog', 'v')) {
     Assert-Condition ([bool](Get-Command $name -ErrorAction SilentlyContinue)) "Command: $name"
 }
-foreach ($name in @('c', 'which')) {
+foreach ($name in @('c', 'which', 'vi')) {
     Assert-Condition ([bool](Get-Command $name -CommandType Alias -ErrorAction SilentlyContinue)) "Alias: $name"
 }
 
