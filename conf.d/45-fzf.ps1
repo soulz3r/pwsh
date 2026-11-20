@@ -20,3 +20,36 @@ foreach ($option in @(
 }
 
 $env:FZF_DEFAULT_OPTS = $fzfOptions -join ' '
+
+
+# Ctrl+R searches saved PSReadLine history in the compact fzf popup.
+$fzf = Get-Command fzf -CommandType Application -ErrorAction SilentlyContinue
+if ($fzf -and (Get-Module -ListAvailable -Name PSReadLine)) {
+    Set-PSReadLineKeyHandler -Chord Ctrl+r -BriefDescription 'Search command history' -LongDescription 'Search recent PowerShell commands with fzf' -ScriptBlock {
+        $historyPath = (Get-PSReadLineOption).HistorySavePath
+        $history = @()
+
+        if ($historyPath -and (Test-Path -LiteralPath $historyPath -PathType Leaf)) {
+            $history = @(Get-Content -LiteralPath $historyPath -Tail 5000 -ErrorAction SilentlyContinue)
+        }
+
+        if ($history.Count -eq 0) {
+            $history = @(Get-History | ForEach-Object { $_.CommandLine })
+        }
+
+        if ($history.Count -eq 0) {
+            return
+        }
+
+        $selected = $history |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+            & $fzf.Source --tac --no-sort
+
+        if (-not [string]::IsNullOrWhiteSpace($selected)) {
+            $line = ''
+            $cursor = 0
+            [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+            [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, $selected)
+        }
+    }
+}
