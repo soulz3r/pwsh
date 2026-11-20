@@ -40,7 +40,15 @@ $toolsSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/40-tools.ps1') 
 Assert-Condition ($toolsSource -match 'Get-Command lsd') 'lsd integration is optional'
 Assert-Condition ($toolsSource -match 'Set-Alias -Name ls') 'ls uses lsd when installed'
 
+$fzfSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/45-fzf.ps1') -Raw
+Assert-Condition ($fzfSource -match '--height=60%') 'fzf uses a compact terminal height'
+Assert-Condition ($fzfSource -match '--layout=reverse') 'fzf uses reverse layout'
+Assert-Condition ($fzfSource -match '--border=rounded') 'fzf uses a rounded border'
+
 . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
+Assert-Condition ($env:FZF_DEFAULT_OPTS -match '--height=60%') 'Profile applies compact fzf defaults'
+Assert-Condition ($env:FZF_DEFAULT_OPTS -match '--border=rounded') 'Profile applies fzf border defaults'
+
 foreach ($name in @('croot', 'mkcd', 'g', 'gs', 'ga', 'gco', 'gcb', 'gcm', 'gpl', 'gps', 'glog', 'v')) {
     Assert-Condition ([bool](Get-Command $name -ErrorAction SilentlyContinue)) "Command: $name"
 }
