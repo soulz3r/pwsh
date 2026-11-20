@@ -47,6 +47,9 @@ $fzfSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/45-fzf.ps1') -Raw
 Assert-Condition ($fzfSource -match '--height=60%') 'fzf uses a compact terminal height'
 Assert-Condition ($fzfSource -match '--layout=reverse') 'fzf uses reverse layout'
 Assert-Condition ($fzfSource -match '--border=rounded') 'fzf uses a rounded border'
+Assert-Condition ($fzfSource -match 'Set-PSReadLineKeyHandler -Chord Ctrl\+r') 'fzf binds Ctrl+R history search'
+Assert-Condition ($fzfSource -match 'HistorySavePath') 'fzf searches saved PowerShell history'
+Assert-Condition ($fzfSource -match '--tac --no-sort') 'fzf history is ordered newest first'
 
 . (Join-Path $root 'Microsoft.PowerShell_profile.ps1')
 Assert-Condition ($env:FZF_DEFAULT_OPTS -match '--height=60%') 'Profile applies compact fzf defaults'
