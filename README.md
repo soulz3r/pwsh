@@ -20,6 +20,10 @@ The first line shows the current path and local Git branch. `+` marks staged cha
 | `c` | Change directory |
 | `croot` | Go to `PROJECTS_DIR` |
 | `mkcd name` | Create a directory and enter it |
+| `ls` | Use lsd when installed |
+| `ll` | lsd long listing |
+| `la` | lsd listing including hidden files |
+| `lt` | lsd tree |
 | `g` | Run Git |
 | `gs` | Git status |
 | `ga` | Git add |
@@ -30,13 +34,13 @@ The first line shows the current path and local Git branch. `+` marks staged cha
 | `gps` | Git push |
 | `glog` | Compact graph log |
 | `which` | Find a command |
-| `v` | Neovim |
+| `v`, `vi` | Vim |
 
-Git shortcuts pass remaining arguments directly to Git.
+Git shortcuts pass remaining arguments directly to Git. `fzf`, `fd`, and other installed executables remain directly available on PATH; the profile does not wrap them.
 
 ## Requirements
 
-PowerShell 7, Oh My Posh, a Nerd Font, and PSReadLine. zoxide is optional.
+PowerShell 7, Oh My Posh, a Nerd Font, PSReadLine, Git, and Vim. zoxide and lsd are optional.
 
 The project directory defaults to `D:\projects` when it exists, otherwise `~/projects`. Set `PROJECTS_DIR` to override it.
 
