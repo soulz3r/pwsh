@@ -1,22 +1,7 @@
-# PSReadLine owns editing behavior. Oh My Posh's vimode segment installs
-# the live mode-change handler during prompt initialization.
+# Keep editing behavior simple: Vi keys, cursor mode indicator, quiet bell.
 if (Get-Module -ListAvailable -Name PSReadLine) {
     Import-Module PSReadLine -ErrorAction SilentlyContinue
-
-    $options = @(
-        @{ EditMode = 'Vi' }
-        @{ ViModeIndicator = 'Script' }
-        @{ HistorySearchCursorMovesToEnd = $true }
-        @{ PredictionSource = 'HistoryAndPlugin' }
-        @{ PredictionViewStyle = 'InlineView' }
-        @{ BellStyle = 'None' }
-    )
-
-    foreach ($option in $options) {
-        try {
-            Set-PSReadLineOption @option
-        } catch {
-            Write-Verbose "PSReadLine option '$($option.Keys -join ', ')' is unavailable: $($_.Exception.Message)"
-        }
-    }
+    Set-PSReadLineOption -EditMode Vi
+    Set-PSReadLineOption -ViModeIndicator Cursor
+    Set-PSReadLineOption -BellStyle None
 }

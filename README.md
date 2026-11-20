@@ -1,109 +1,65 @@
 # pwsh
 
-A modular PowerShell profile built around a fast interactive shell, practical terminal workflows, and an Everforest-inspired prompt.
+A small PowerShell profile with Vi editing, a plain prompt, and short commands.
 
 ## Prompt
 
-The prompt is deliberately two lines:
+One line. Current directory and an input arrow.
 
-- The first line shows a shortened path and, inside Git repositories, a quiet branch name.
-- Staged and unstaged changes use small `+` and `*` markers.
-- The second line keeps the Vi indicator beside the input arrow: ( I,  N,  V,  O, or  R).
-- Commands taking at least one second show a muted duration.
-- A failed command changes the input arrow to the error color.
+```text
+D:\projects ❯
+```
 
-Example:
+No Oh My Posh, prompt plugins, Git status checks, or decorative segments.
 
-~~~text
-D:/projects  main
- I ❯
-~~~
+## Shortcuts
 
-The prompt uses plain text on a transparent background, without powerline separators or boxed segments. The path shortens intermediate folders only when needed. Git status remains local-only; the prompt does not calculate remote ahead/behind counts.
+| Shortcut | Command |
+|---|---|
+| `c` | `Set-Location` |
+| `up [n]` | Go up *n* directories |
+| `croot` | Go to `PROJECTS_DIR` |
+| `mkcd name` | Create a directory and enter it |
+| `ll` | List in table form |
+| `la` | List including hidden items |
+| `touch file` | Create a file or update its timestamp |
+| `which name` | Find a command |
+| `g` | Run Git |
+| `gs` | Git status |
+| `ga` | Git add |
+| `gco` | Git switch |
+| `gcb` | Create and switch to a branch |
+| `gcm` | Git commit |
+| `gpl` | Git pull with fast-forward only |
+| `gps` | Git push |
+| `glog` | Compact graph log |
+| `v` | Neovim |
+| `nvg` | Neovide |
 
-## Features
+Git shortcuts pass their remaining arguments to Git. PowerShell does not have Fish-style abbreviations built in, so these are small functions and aliases.
 
-- Repository-local Oh My Posh theme using the current config format.
-- PSReadLine Vi editing with the Oh My Posh live mode-change handler.
-- Everforest colors, local Git status, and command execution time.
-- Optional zoxide, fd, fzf, PSFzf, and lsd integrations.
-- Project navigation with croot and cproj.
-- Bounded fuzzy file search with ff.
-- Filesystem commands ls, ll, la, lt, and llt.
-- Directory creation with mkcd and explicit recursive deletion with rdtree.
-- Neovide launcher nvg, with the previous nvm shortcut retained when Node Version Manager is not installed.
-- Idempotent SilkTerm shell integration.
-- Symlink-aware installer and behavioral smoke tests.
+## Optional tools
 
-## Layout
+- PowerShell 7
+- PSReadLine (included with current PowerShell)
+- zoxide (optional; enables `z`)
 
-~~~text
-pwsh/
-├── .github/workflows/powershell.yml
-├── conf.d/
-├── docs/design-decisions.md
-├── tests/validate.ps1
-├── install.ps1
-├── Microsoft.PowerShell_profile.ps1
-├── zen.toml
-└── README.md
-~~~
-
-The root profile is the entrypoint and loader. Put features in focused files under conf.d; files load alphabetically. PSReadLine configures Vi editing first. Oh My Posh's vimode segment installs the script-based mode-change handler and redraws the prompt when the mode changes. zoxide initializes after Oh My Posh and uses its change-aware hook on modern PowerShell. The zoxide prompt wrapper is expected: it calls the saved prompt and then updates directory history. If Oh My Posh or the theme is unavailable, PSReadLine falls back to its visible cursor indicator.
-
-## Requirements
-
-PowerShell 7 is recommended. The prompt uses [Oh My Posh](https://ohmyposh.dev/) and a [Nerd Font](https://www.nerdfonts.com/) for the Vim glyph.
-
-Optional integrations: [zoxide](https://github.com/ajeetdsouza/zoxide), [fd](https://github.com/sharkdp/fd), [fzf](https://github.com/junegunn/fzf), [PSFzf](https://github.com/kelleyma49/PSFzf), [lsd](https://github.com/lsd-rs/lsd), and [Neovide](https://neovide.dev/).
-
-Install PSFzf with Install-Module PSFzf -Scope CurrentUser.
+The project directory defaults to `D:\projects` when it exists, otherwise `~/projects`. Set `PROJECTS_DIR` to override it.
 
 ## Install
 
-~~~powershell
+```powershell
 git clone https://github.com/soulz3r/pwsh.git D:\config\powershell
 Set-Location D:\config\powershell
-~~~
+. .\Microsoft.PowerShell_profile.ps1
+```
 
-If your profile already symlinks directly to this repository's Microsoft.PowerShell_profile.ps1, that is already the correct setup. Do not add another loader to the linked file.
+To register the profile for future sessions:
 
-For setups without that symlink:
-
-~~~powershell
+```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
-~~~
-
-You can target a separate profile path when testing:
-
-~~~powershell
-pwsh -NoProfile -File .\install.ps1 -ProfilePath "$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1"
-~~~
-
-The installer preserves existing profile content, creates a timestamped backup before changing a regular profile file, and refuses to write through unrelated symlinks. It does not install Oh My Posh.
-
-## Commands
-
-| Command | Purpose |
-|---|---|
-| croot | Jump to PROJECTS_DIR |
-| cproj | Find a project directory using fzf |
-| mkcd path | Create a directory and enter it |
-| ff [path] | Fuzzy-find a file and copy its full path |
-| ls, ll, la | Directory listings |
-| lt, llt | Tree listings |
-| rdtree path | Recursively delete a directory; supports WhatIf and Confirm |
-| rmdir path | Legacy recursive-delete shortcut to rdtree |
-| nvg | Launch Neovide |
-
-The project root uses D:\projects when it exists, otherwise ~/projects. Set PROJECTS_DIR before loading the profile to override it.
-
-Search prefers fd and streams results directly into fzf so the selector can open before the full tree has been scanned. The PowerShell fallback for ff is deliberately limited to five directory levels. Search and tree commands skip common generated/vendor directories such as .git, node_modules, build, and target. Project discovery falls back to a bounded PowerShell traversal if fd fails.
-
-Preview deletion with rdtree -WhatIf .\some-folder. The legacy rmdir command remains an alias to rdtree, so existing recursive-delete workflows keep working.
+```
 
 ## Checks
 
-Run ./tests/validate.ps1 locally. GitHub Actions runs the same behavior checks and PSScriptAnalyzer on pushes and pull requests targeting main.
-
-See docs/design-decisions.md for ownership and safety rules.
+Run `./tests/validate.ps1`. GitHub Actions runs the same checks and PSScriptAnalyzer on pushes to `main`.
