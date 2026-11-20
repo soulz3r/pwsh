@@ -1,65 +1,50 @@
 # pwsh
 
-A small PowerShell profile with Vi editing, a plain prompt, and short commands.
+A minimal PowerShell profile with Oh My Posh, Git context, Vi editing, and a few useful shortcuts.
 
 ## Prompt
 
-One line. Current directory and an input arrow.
+Two plain lines, no boxes or powerline separators:
 
 ```text
-D:\projects ❯
+D:/projects  main
+ I ❯
 ```
 
-No Oh My Posh, prompt plugins, Git status checks, or decorative segments.
+The first line shows the current path and local Git branch. `+` marks staged changes and `*` marks working-tree changes. The second line shows the PSReadLine Vi mode. Oh My Posh handles prompt rendering and mode-change redraw.
 
 ## Shortcuts
 
-| Shortcut | Command |
+| Shortcut | Purpose |
 |---|---|
-| `c` | `Set-Location` |
-| `up [n]` | Go up *n* directories |
+| `c` | Change directory |
 | `croot` | Go to `PROJECTS_DIR` |
 | `mkcd name` | Create a directory and enter it |
-| `ll` | List in table form |
-| `la` | List including hidden items |
-| `touch file` | Create a file or update its timestamp |
-| `which name` | Find a command |
 | `g` | Run Git |
 | `gs` | Git status |
 | `ga` | Git add |
 | `gco` | Git switch |
 | `gcb` | Create and switch to a branch |
 | `gcm` | Git commit |
-| `gpl` | Git pull with fast-forward only |
+| `gpl` | Git pull, fast-forward only |
 | `gps` | Git push |
 | `glog` | Compact graph log |
+| `which` | Find a command |
 | `v` | Neovim |
-| `nvg` | Neovide |
 
-Git shortcuts pass their remaining arguments to Git. PowerShell does not have Fish-style abbreviations built in, so these are small functions and aliases.
+Git shortcuts pass remaining arguments directly to Git.
 
-## Optional tools
+## Requirements
 
-- PowerShell 7
-- PSReadLine (included with current PowerShell)
-- zoxide (optional; enables `z`)
+PowerShell 7, Oh My Posh, a Nerd Font, and PSReadLine. zoxide is optional.
 
 The project directory defaults to `D:\projects` when it exists, otherwise `~/projects`. Set `PROJECTS_DIR` to override it.
 
 ## Install
 
 ```powershell
-git clone https://github.com/soulz3r/pwsh.git D:\config\powershell
 Set-Location D:\config\powershell
 . .\Microsoft.PowerShell_profile.ps1
 ```
 
-To register the profile for future sessions:
-
-```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
-```
-
-## Checks
-
-Run `./tests/validate.ps1`. GitHub Actions runs the same checks and PSScriptAnalyzer on pushes to `main`.
+Run `./tests/validate.ps1` to check the profile.
