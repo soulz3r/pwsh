@@ -34,20 +34,11 @@ final_space = true
       commit_icon = '@'
       resolve_rebase_target = false
 
-# Second line: Vi mode and input arrow.
+# Second line: input arrow.
 [[blocks]]
   type = 'prompt'
   alignment = 'left'
   newline = true
-
-  [[blocks.segments]]
-    type = 'vimode'
-    style = 'plain'
-    background = 'transparent'
-    foreground_templates = [
-      '{{if eq .Mode "insert"}}#A7C080{{else if eq .Mode "normal"}}#DBBC7F{{else if eq .Mode "visual"}}#7FBBB3{{else if eq .Mode "viopp"}}#D699B6{{else if eq .Mode "replace"}}#E67E80{{else}}#D3C6AA{{end}}',
-    ]
-    template = ' {{if eq .Mode "insert"}}I{{else if eq .Mode "normal"}}N{{else if eq .Mode "visual"}}V{{else if eq .Mode "viopp"}}O{{else if eq .Mode "replace"}}R{{else}}{{upper .Mode}}{{end}}'
 
   [[blocks.segments]]
     type = 'text'
@@ -56,7 +47,7 @@ final_space = true
       '{{if gt .Code 0}}#E67E80{{else}}#A7C080{{end}}',
     ]
     background = 'transparent'
-    template = ' ❯ '
+    template = '❯ '
 
 [transient_prompt]
   foreground_templates = [
