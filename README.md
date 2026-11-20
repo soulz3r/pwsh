@@ -34,6 +34,7 @@ The first line shows the current path and local Git branch. `+` marks staged cha
 | `gps` | Git push |
 | `glog` | Compact graph log |
 | `which` | Find a command |
+| `Ctrl+R` | Search saved command history with fzf |
 | `v`, `vi` | Vim |
 
 Git shortcuts pass remaining arguments directly to Git. `fzf`, `fd`, and other installed executables remain directly available on PATH; the profile does not wrap them.
