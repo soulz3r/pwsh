@@ -27,14 +27,17 @@ Assert-Condition (Test-Path -LiteralPath $themePath -PathType Leaf) 'Oh My Posh 
 $theme = Get-Content -LiteralPath $themePath -Raw
 Assert-Condition ($theme -match "(?m)^version\s*=\s*4\r?$") 'Oh My Posh theme uses config v4'
 Assert-Condition ($theme.Contains("type = 'git'")) 'Prompt includes Git context'
-Assert-Condition ($theme.Contains("type = 'vimode'")) 'Prompt includes Vi mode'
+Assert-Condition ($theme -notmatch "type\s*=\s*'vimode'") 'Prompt has no Vi mode segment'
 Assert-Condition ($theme -match "template = '\{\{ \.Path \}\}'") 'Prompt path is plain text'
 Assert-Condition ($theme -notmatch 'leading_diamond|trailing_diamond|powerline_symbol||') 'Prompt has no powerline decoration'
 Assert-Condition ($theme -notmatch 'executiontime|battery|sysinfo|spotify') 'Prompt avoids unrelated segments'
 
+$readlineSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/15-readline.ps1') -Raw
+Assert-Condition ($readlineSource -notmatch 'EditMode\s+Vi|ViModeIndicator') 'PSReadLine keeps its default editing mode'
 $promptSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/20-prompt.ps1') -Raw
 Assert-Condition ($promptSource -match '\$ohMyPosh\.Source init pwsh --config') 'Profile initializes Oh My Posh'
 Assert-Condition ($promptSource -match '__zoxide_prompt_old') 'Prompt reload restores zoxide wrapper safely'
+Assert-Condition ($promptSource -notmatch 'ViModeIndicator') 'Oh My Posh initialization has no Vi-mode hooks'
 
 $toolsSource = Get-Content -LiteralPath (Join-Path $root 'conf.d/40-tools.ps1') -Raw
 Assert-Condition ($toolsSource -match 'Get-Command lsd') 'lsd integration is optional'
