@@ -1,7 +1,5 @@
-# PSReadLine handles Vi editing; Oh My Posh handles the live mode display.
+# Keep PSReadLine on its default Windows editing mode.
 if (Get-Module -ListAvailable -Name PSReadLine) {
     Import-Module PSReadLine -ErrorAction SilentlyContinue
-    Set-PSReadLineOption -EditMode Vi
-    Set-PSReadLineOption -ViModeIndicator Script
     Set-PSReadLineOption -BellStyle None
 }
