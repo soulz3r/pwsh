@@ -63,19 +63,19 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
     type = 'text'
     style = 'plain'
     foreground_templates = [
-      '{{if gt .Code 0}}#E67E80{{else}}#D699B6{{end}}',
+      '{{if gt .Code 0}}#E67E80{{else}}#A7C080{{end}}',
     ]
     background = 'transparent'
     template = '❯'
 
 [transient_prompt]
   foreground_templates = [
-    '{{if gt .Code 0}}#E67E80{{else}}#D699B6{{end}}',
+    '{{if gt .Code 0}}#E67E80{{else}}#A7C080{{end}}',
   ]
   background = 'transparent'
   template = '❯ '
 
 [secondary_prompt]
-  foreground = '#D699B6'
+  foreground = '#7FBBB3'
   background = 'transparent'
   template = '❯❯ '
