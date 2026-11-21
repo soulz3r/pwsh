@@ -44,15 +44,6 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
     ]
     template = ' {{if eq .Mode "insert"}} I{{else if eq .Mode "normal"}} N{{else if eq .Mode "visual"}} V{{else if eq .Mode "viopp"}} O{{else if eq .Mode "replace"}} R{{else}} {{upper .Mode}}{{end}} '
 
-  [[blocks.segments]]
-    type = 'executiontime'
-    style = 'plain'
-    foreground = '#D3C6AA'
-    background = 'transparent'
-    template = '· ◷ {{ .FormattedMs }}'
-
-    [blocks.segments.properties]
-      threshold = 1000
 
   [[blocks.segments]]
     type = 'status'
