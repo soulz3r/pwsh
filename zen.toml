@@ -54,6 +54,18 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
     [blocks.segments.properties]
       threshold = 1000
 
+  [[blocks.segments]]
+    type = 'status'
+    style = 'plain'
+    foreground_templates = [
+      '{{if gt .Code 0}}#E67E80{{else}}#A7C080{{end}}',
+    ]
+    background = 'transparent'
+    template = '{{ if .Executed }}· exit {{ .Code }}{{ end }}'
+
+    [blocks.segments.properties]
+      always_enabled = true
+
 [[blocks]]
   type = 'prompt'
   alignment = 'left'
